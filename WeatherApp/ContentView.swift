@@ -20,6 +20,12 @@ struct ContentView: View {
                 backgroundView(for: viewModel.weatherDescription)
                     .ignoresSafeArea()
                 
+                if isLoading {
+                    ProgressView("Loading...")
+                        .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                        .scaleEffect(2.0)
+                } else {
+                
                 VStack {
                     Text("Current place")
                         .font(.largeTitle)
@@ -54,6 +60,7 @@ struct ContentView: View {
                     Spacer()
                 }
                 .padding(.top, 20)
+            }
             }
 //            .navigationTitle("Weather App")
             .navigationBarTitleDisplayMode(.inline)
@@ -106,7 +113,12 @@ struct ContentView: View {
     }
     
     private func loadWeather() {
-        viewModel.fetchWeather()
+        isLoading = true
+        viewModel.fetchWeather {
+            DispatchQueue.main.async {
+                isLoading = false
+            }
+        }
     }
 
     @ViewBuilder
