@@ -15,7 +15,7 @@ struct ContentView: View {
     @State private var isLoading = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ZStack {
                 backgroundView(for: viewModel.weatherDescription)
                     .ignoresSafeArea()
