@@ -25,44 +25,43 @@ struct ContentView: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .blue))
                         .scaleEffect(2.0)
                 } else {
-                
-                VStack {
-                    Text("Current place")
-                        .font(.largeTitle)
-                        .bold()
-                        .padding(.top, 20)
-                        .foregroundColor(isNightTime() ? .white : .black)
                     
-                    Text(viewModel.cityName)
-                        .font(.largeTitle)
-                        .foregroundColor(isNightTime() ? .white : .black)
-                    
-                    VStack(spacing: 16) {
-                        weatherCard(title: "Temperature", value: viewModel.temperature, icon: "thermometer")
-                        
-                        Text("Description: \(viewModel.weatherDescription)")
+                    VStack(spacing: UIDevice.current.userInterfaceIdiom == .pad ? 24 : 16) {
+                        Text("Current place")
+                            .font(.largeTitle)
+                            .bold()
+                            .padding(.top, 20)
                             .foregroundColor(isNightTime() ? .white : .black)
                         
-                        weatherCard(title: "Wind Speed", value: "\(viewModel.windSpeed)", icon: "wind")
+                        Text(viewModel.cityName)
+                            .font(.largeTitle)
+                            .foregroundColor(isNightTime() ? .white : .black)
+                        
+                        VStack(spacing: 16) {
+                            weatherCard(title: "Temperature", value: viewModel.temperature, icon: "thermometer")
+                            
+                            Text("Description: \(viewModel.weatherDescription)")
+                                .foregroundColor(isNightTime() ? .white : .black)
+                            
+                            weatherCard(title: "Wind Speed", value: "\(viewModel.windSpeed)", icon: "wind")
+                        }
+                        .padding()
+                        
+                        Button(action: {
+                            viewModel.toggleTemperatureUnit()
+                        }) {
+                            Text("Change Temperature Unit")
+                                .font(.title2)
+                                .foregroundColor(.white)
+                                .padding()
+                                .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
+                        }
+                        
+                        Spacer()
                     }
-                    .padding()
-                    
-                    Button(action: {
-                        viewModel.toggleTemperatureUnit()
-                    }) {
-                        Text("Change Temperature Unit")
-                            .font(.title2)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue))
-                    }
-                    
-                    Spacer()
+                    .padding(UIDevice.current.userInterfaceIdiom == .pad ? 40 : 20)
                 }
-                .padding(.top, 20)
             }
-            }
-//            .navigationTitle("Weather App")
             .navigationBarTitleDisplayMode(.inline)
             .navigationBarItems(trailing:
                                     Button(action: {
@@ -120,32 +119,29 @@ struct ContentView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private func backgroundView(for condition: String) -> some View {
-        if isNightTime() {
-            NightBackgroundView()
+        if UIDevice.current.userInterfaceIdiom == .pad {
+            Group {
+                if isNightTime() {
+                    NightBackgroundView()
+                } else {
+                    DefaultBackgroundView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .scaledToFill()
         } else {
-            switch condition {
-            case "Sunny", "Clear":
-                Image("sunnyBg")
-                    .resizable()
-                    .scaledToFill()
-            case "Cloudy":
-                Image("cloudyBg")
-                    .resizable()
-                    .scaledToFill()
-            case "Partly cloudy":
-                Image("partlyCloudyBg")
-                    .resizable()
-                    .scaledToFill()
-            case "Rain":
-                Image("rainBg")
-                    .resizable()
-                    .scaledToFill()
-            case "Night", "Clear Night", "Partly cloudy night":
-                NightBackgroundView()
-            default:
+            if let weatherCondition = WeatherCondition(rawValue: condition) {
+                if isNightTime() && [.night, .clearNight, .partlyCloudyNight].contains(weatherCondition) {
+                    NightBackgroundView()
+                } else {
+                    Image(weatherCondition.backgroundImageName)
+                        .resizable()
+                        .scaledToFill()
+                }
+            } else {
                 DefaultBackgroundView()
             }
         }
@@ -171,9 +167,7 @@ struct ContentView: View {
         .padding()
         .background(RoundedRectangle(cornerRadius: 15)
             .fill(isNightTime() ? Color.blue.opacity(0.3) : Color.blue.opacity(0.2)))
-//            .fill(Color.blue.opacity(0.2)))
         .shadow(color: isNightTime() ? .white.opacity(0.5) : .black.opacity(0.2), radius: 5)
-//        .shadow(radius: 5)
     }
     
     private func isNightTime() -> Bool {

@@ -5,6 +5,8 @@
 //  Created by Anna on 22.10.2024.
 //
 
+import Foundation
+
 struct WeatherData: Codable {
     let location: Location
     let current: CurrentWeather
